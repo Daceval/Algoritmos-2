@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "abb.h"
+#include "pila.h"
 
 
 /******ESTRUCTURAS*******/
@@ -22,9 +23,9 @@ struct abb {
 	abb_comparar_clave_t comparar;
 };
 
-//falta struct del iterador
-
-/*******************************/
+struct abb_iter{
+	pila_t* pila;
+}
 
 
 /******FUNCIONES AUX PARA IMPLEMENTACION DE ABB**********/
@@ -37,7 +38,9 @@ nodo_abb_t* crear_nodo(const char* clave, void* dato);
 
 void insertar_nodo(abb_t* arbol, nodo_abb_t* nodo_a_insertar);
 
-void destruir_estructura_arbol(nodo_abb_t* nodo, abb_destruir_dato_t destruir)
+void destruir_estructura_arbol(nodo_abb_t* nodo, abb_destruir_dato_t destruir);
+
+void llenar_pila(pila_t* pila, nodo_abb_t* nodo);
 
 /********************************************************/
 
@@ -86,10 +89,7 @@ bool abb_guardar(abb_t* arbol, const char* clave, void* dato){
 
 bool abb_pertenece(abb_t* arbol, char* clave){
 	nodo_abb_t* pertenece = _buscar_nodo(arbol->raiz, clave, arbol->comparar);
-	if(!pertenece){
-		return false;
-	}
-	return true;
+	return !pertenece ? false : true;
 }
 
 
@@ -112,6 +112,54 @@ size_t abb_cantidad(abb_t* arbol){
 	return arbol->cant;
 }
 
+
+/***********PRIMITIVAS ITERADOR EXTERNO *************/
+
+abb_iter_t* abb_iter_in_crear(const abb_t* arbol ){
+	if(!arbol){
+		return NULL;
+	}
+	abb_iter_t* iter = malloc(sizeof(abb_iter_t));
+	if(!iter){
+		return NULL;
+	}
+	iter->pila = pila_crear();
+	if(!iter->pila){
+		free(iter);
+		return NULL;
+	}
+	llenar_pila(pila, arbol->raiz);
+	return iter;
+}
+
+
+bool abb_iter_in_avanzar(abb_iter_t* iter){
+	if(abb_iter_in_al_final(iter)){
+		return false;
+	}
+	nodo_abb_t* nodo = (nodo_abb_t*) pila_desapilar(iter->pila);
+	nodo_abb_t* nodo_derecho = nodo->der;
+	if(nodo_derecho){
+		llenar_pila(iter->pila, nodo_derecho);
+	}
+	return true;
+}
+
+const char* abb_iter_in_ver_actual(const abb_iter_t* iter){
+	nodo_abb_t* nodo = (nodo_abb_t*)pila_ver_tope(iter->pila);
+	return nodo->clave;
+}
+
+
+bool abb_iter_in_al_final(const abb_iter_t* iter){
+	return pila_esta_vacia(iter->pila) ? true : false;
+}
+
+
+void abb_iter_in_destruir(abb_iter_t* iter){
+	pila_destruir(iter->pila);
+	free(iter);
+}
 
 /************* FUNCIONES AUXILIARES **********/
 
@@ -172,4 +220,12 @@ void destruir_estructura_arbol(nodo_abb_t* nodo, abb_destruir_dato_t destruir){
 		destruir(nodo->dato);
 	}
 	free(clave);
+}
+
+void llenar_pila(pila_t* pila, nodo_abb_t* nodo){
+	if(!nodo){
+		return;
+	}
+	pila_apilar(pila, nodo);
+	llenar_pila(pila, nodo->izq);
 }

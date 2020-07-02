@@ -44,6 +44,8 @@ void destruir_estructura_arbol(nodo_abb_t* nodo, abb_destruir_dato_t destruir);
 
 void llenar_pila(pila_t* pila, nodo_abb_t* nodo);
 
+void iterar_in_order(nodo_abb_t* nodo, bool visitar(const char*, void*, void*), void* extra, bool* avanzar);
+
 /********************************************************/
 
 
@@ -193,6 +195,21 @@ void abb_iter_in_destruir(abb_iter_t* iter){
 	free(iter);
 }
 
+
+
+/*** PRIMITIVA ITERADOR INTERNO *****/
+
+void abb_in_order(abb_t* arbol, bool visitar(const char*, void*, void*), void* extra){
+	if(!arbol){
+		return;
+	}
+	bool llamar_recursivamente = true;
+	iterar_in_order(arbol->raiz, visitar, extra, &llamar_recursivamente);
+}
+
+
+
+
 /************* FUNCIONES AUXILIARES **********/
 
 nodo_abb_t* _buscar_nodo(nodo_abb_t* nodo, const char* clave, abb_comparar_clave_t cmp){
@@ -267,4 +284,18 @@ void llenar_pila(pila_t* pila, nodo_abb_t* nodo){
 	}
 	pila_apilar(pila, nodo);
 	llenar_pila(pila, nodo->izq);
+}
+
+void iterar_in_order(nodo_abb_t* nodo, bool visitar(const char*, void*, void*), void* extra, bool* avanzar){
+	if (!nodo || !*avanzar){
+		return;
+	}
+	iterar_in_order(nodo->izq, vistar, extra, avanzar);
+	if (*avanzar){
+		*avanzar = visitar(nodo->clave, nodo->dato, extra);
+		if(!*avanzar){
+			return;
+		}
+	}
+	iterar_in_order(nodo->der, visitar, extra, avanzar);
 }

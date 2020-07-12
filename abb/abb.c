@@ -66,59 +66,34 @@ abb_t* abb_crear(abb_comparar_clave_t cmp, abb_destruir_dato_t destruir){
 	return arbol;
 }
 
+
+
 bool abb_guardar(abb_t* arbol, const char* clave, void* dato){
-	nodo_abb_t* nuevo_nodo = crear_nodo(clave, dato);
-	if(!nuevo_nodo || !arbol){
+	if(!arbol)
 		return false;
+	nodo_abb_t* esta_nodo_en_abb = _buscar_nodo(arbol->raiz, clave, arbol->comparar);
+	if(esta_nodo_en_abb){
+		if(arbol->destruir != NULL)
+			arbol->destruir(esta_nodo_en_abb->dato);
+		esta_nodo_en_abb->dato = dato;
+		return true;
 	}
+	nodo_abb_t* nuevo_nodo = crear_nodo(clave, dato);
+	if(!nuevo_nodo)
+		return false;
 	if(!arbol->raiz){
 		arbol->raiz = nuevo_nodo;
 		arbol->cant++;
 		return true;
 	}
-	nodo_abb_t* esta_nodo_en_abb = _buscar_nodo(arbol->raiz, clave, arbol->comparar);
-	if(esta_nodo_en_abb){
-		if(arbol->destruir != NULL){
-			arbol->destruir(esta_nodo_en_abb->dato);
-		}
-		esta_nodo_en_abb->dato = dato;
-		free(nuevo_nodo->clave);
-		free(nuevo_nodo);
-	} else{
-		insertar_nodo(arbol, nuevo_nodo);
-		arbol->cant++;	
-	}			
+	insertar_nodo(arbol, nuevo_nodo);
+	arbol->cant++;	
 	return true;
 }
 
-/********************* VARIANTE PARA ABB_GUARDAR ***********************/
-
-// bool abb_guardar(abb_t* arbol, const char* clave, void* dato){
-// 	if(!arbol)
-// 		return false;
-// 	nodo_abb_t* esta_nodo_en_abb = _buscar_nodo(arbol->raiz, clave, arbol->comparar);
-// 	if(esta_nodo_en_abb){
-// 		if(arbol->destruir != NULL)
-// 			arbol->destruir(esta_nodo_en_abb->dato);
-// 		esta_nodo_en_abb->dato = dato;
-// 		return true;
-// 	}
-// 	nodo_abb_t* nuevo_nodo = crear_nodo(clave, dato);
-// 	if(!nuevo_nodo)
-// 		return false;
-// 	if(!arbol->raiz){
-// 		arbol->raiz = nuevo_nodo;
-// 		arbol->cant++;
-// 		return true;
-// 	}
-// 	insertar_nodo(arbol, nuevo_nodo);
-// 	arbol->cant++;	
-// 	return true;
-// }
-
 void *abb_borrar(abb_t *arbol, const char *clave){
 	if(!abb_pertenece(arbol, clave)){
-		printf("DEVUELVE NULL\n");
+		
 		return NULL;
 	}
 	bool raiz = false;
@@ -165,8 +140,6 @@ void *abb_borrar(abb_t *arbol, const char *clave){
 
 bool abb_pertenece(const abb_t* arbol,const char* clave){
 	nodo_abb_t* pertenece = _buscar_nodo(arbol->raiz, clave, arbol->comparar);
-	if(!pertenece)
-		printf("NO PERTENECE\n");
 	return !pertenece ? false : true;
 }
 
@@ -255,7 +228,7 @@ nodo_abb_t* _buscar_nodo(nodo_abb_t* nodo, const char* clave, abb_comparar_clave
 	if(!nodo){
 		return NULL;
 	}
-	//printf("clave1: %s     clave2: %s\n", nodo->clave, clave);
+
 	if(cmp(nodo->clave, clave) == 0){
 		return nodo;
 	} else if(cmp(nodo->clave, clave) > 0){
@@ -295,7 +268,6 @@ nodo_abb_t* _buscar_nodo_padre(nodo_abb_t* nodo, const char* clave, abb_comparar
 
 void insertar_nodo(abb_t* arbol, nodo_abb_t* nodo_a_insertar){
 	nodo_abb_t* nodo_padre = _buscar_nodo_padre(arbol->raiz, nodo_a_insertar->clave, arbol->comparar);
-	//printf("padre: %s    hijo: %s\n", nodo_padre->clave, nodo_a_insertar->clave);
 	if(arbol->comparar(nodo_padre->clave, nodo_a_insertar->clave) > 0){
 		nodo_padre->izq = nodo_a_insertar;
 	}

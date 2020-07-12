@@ -296,7 +296,7 @@ void pruebas_abb_iter_volumen(){
     print_test("Prueba abb iterador esta al final, es true", abb_iter_in_al_final(iter));
 
     ok = true;
-    for (size_t i = 0; i < largo; i++) {
+    for (i = 0; i < largo; i++) {
         if ( valores[i] != largo ) {
             ok = false;
             break;

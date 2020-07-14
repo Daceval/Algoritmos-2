@@ -1,7 +1,7 @@
-build: heap.c 
-	gcc -g -std=c99 -Wall -Wconversion -Wtype-limits -pedantic -Werror -o heap heap.c
+build: heap.c testing.c main.c pruebas_alumno.c
+	gcc -g -std=c99 -Wall -Wno-conversion -Wtype-limits -pedantic -Werror -o pruebas main.c testing.c heap.c pruebas_alumno.c
 
 run: build
-	./heap
+	./pruebas
 memoria: build
-	valgrind --leak-check=full --track-origins=yes --show-reachable=yes ./heap
+	valgrind --leak-check=full --track-origins=yes --show-reachable=yes ./pruebas

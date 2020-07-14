@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include "heap.h"
 
 void pruebas_heap_alumno(void);
 void pruebas_heap_catedra(void);

@@ -1,7 +1,10 @@
 #include <stddef.h>
 #include "testing.h"
+#include <stdio.h>
+#include <stdlib.h>
 #include "heap.h"
 
+#define LARGO 20
 
 int cmp_func(const void* a, const void* b){
     int* n1 = (int*)a;
@@ -14,10 +17,10 @@ int cmp_func(const void* a, const void* b){
     	return 0;
 }
 
-void prueba_heap_vacio(){
-    printf("Inicio de pruebas con heap vacio \n")
+void prueba_heap_vacio(void){
+    printf("\n----- Inicio de pruebas con heap vacio -----\n");
 
-    heap_t* heap = heap_crear(cmp_func);
+    heap_t*heap = heap_crear(cmp_func);
     print_test("Creando una heap distinto de NULL", heap != NULL);
     print_test("la accion de desencolar en un heap vacio es invalida", heap_desencolar(heap) == NULL);
     print_test("La accion de ver maximo en un heap es invalida", heap_ver_max(heap) == NULL);
@@ -30,8 +33,47 @@ void prueba_heap_vacio(){
 
 }
 
-void pruebas_varias_heap(){
-    printf("Inicio de pruebas varias de heap\n");
+
+void pruebas_heap_sort(void){
+    printf("\n ---- Inicio de pruebas Heap Sort -----\n");
+
+    heap_t* heap = heap_crear(cmp_func);
+
+    void* elementos[LARGO];
+
+    int arr1[LARGO] = {50, 40, 75, 20, 41, 65, 11, 1, -6, 8, 102, 1000, 6000, 25, 17, 15000, -3, -100, -2000, 50};
+    int arr1_ord[LARGO] = {-2000, -100, -6, -3, 1, 8, 11, 17, 20, 25, 40, 41, 50, 50, 65, 75, 102, 1000, 6000, 15000};
+    bool ok = true;
+    for (size_t i = 0; i < LARGO; i++){
+        elementos[i] = &arr1[i];
+    }
+    heap_sort(elementos, LARGO, cmp_func);
+    for (size_t i = 0; i < LARGO; i++){
+        if(*(int*)elementos[i] != arr1_ord[i]){
+            printf("%d    %d    %ld\n",*(int*)elementos[i], arr1_ord[i],  i);
+            ok = false;
+            break;
+        }
+    }
+    print_test("Prueba heap sort arreglo de 20 elementos", ok);
+    heap_destruir(heap, NULL);
+}
+
+void pruebas_heap_destruir_no_NULL(void){
+    printf("\n ----- Inicio de pruebas de heap destruir ----\n");
+    heap_t* heap = heap_crear(cmp_func);
+    int* valor1 = malloc(sizeof(int));
+    int* valor2 = malloc(sizeof(int));
+    *valor1 = 10000;
+    *valor2 = 500;
+    print_test("Prueba encolar un elemento", heap_encolar(heap, valor1));
+    print_test("Prueba encolar segundo elemento", heap_encolar(heap, valor2));
+    heap_destruir(heap, free);
+}
+
+
+void pruebas_varias_heap(void){
+    printf("\n ----- Inicio de pruebas varias de heap ------\n");
 
     heap_t* heap = heap_crear(cmp_func);
     print_test("creando heap distinto de NULL", heap != NULL);
@@ -69,7 +111,7 @@ void pruebas_varias_heap(){
     desencolado = *(int*)heap_desencolar(heap);
     print_test("desencolo el elemento 150", desencolado == elemento2);
 
-    print_test("vuelvo a encolar el ultimo elemento desencolado " heap_encolar(heap, &elemento2) == true);
+    print_test("vuelvo a encolar el ultimo elemento desencolado " ,heap_encolar(heap, &elemento2) == true);
     desencolado = *(int*)heap_desencolar(heap);
     print_test("desencolo de nuevo el elemento 150", desencolado == elemento2);
     print_test("El heap no esta vacio", heap_esta_vacio(heap) == false);
@@ -84,15 +126,13 @@ void pruebas_varias_heap(){
 
 
     /* Destruyo el heap*/
-    heap_destruir(heap);
+    heap_destruir(heap, NULL);
 
     print_test("el heap se destruyo correctamente", true);
 }
 
-void heap_pruebas_de_volumen(){
-	printf("Inicio de pruebas de volumen\n");
-
-	size_t volumen_de_prueba = 2000;
+void heap_pruebas_volumen(size_t volumen){
+	printf("\n -----Inicio de pruebas de volumen heap con (%zu) elementos ------\n", volumen);
 
 	heap_t* heap = heap_crear(cmp_func);
 	print_test("heap creado distinto de NULL", heap != NULL);
@@ -102,7 +142,7 @@ void heap_pruebas_de_volumen(){
 
 	/* Encolo elementos */
 	
-	for (size_t i = 0; i < volumen_de_prueba; i++){
+	for (unsigned i = 0; i < volumen; i++){
 		int* elemento = malloc(sizeof(int));
 		*elemento = i;
 		bool encolado = heap_encolar(heap, elemento);
@@ -125,17 +165,18 @@ void heap_pruebas_de_volumen(){
 	bool desencola_correctamente = true;
 	bool desencola_maximo = true;
 
-	for (size_t j = 0; j < volumen_de_prueba; j++){
+	for (unsigned j = 0; j < volumen; j++){
 		int* maximo = heap_ver_max(heap);
 		int* desencolado = heap_desencolar(heap);
 		if(!desencolado){
 			desencola_correctamente = false;
 			break;
 		}
-		if (*maximo != desencolado){
+		if (*maximo != *desencolado){
 			desencola_maximo = false;
 			break;
 		}
+        free(desencolado);
 	}
 	print_test("los elementos se desencolaron correctamente", desencola_correctamente);
 	print_test("los elementos desencolados son los maximos", desencola_maximo);
@@ -144,9 +185,78 @@ void heap_pruebas_de_volumen(){
 
 
 	/* Destruyo el heap */
-	heap_destruir(heap);
+	heap_destruir(heap, NULL);
 
 	print_test("el heap se destruyo correctamente", true);
 
 }
 
+void pruebas_crear_arr_vacio(void){
+    printf("\n----- Inicio de pruebas sobre Constructor vacio ------\n");
+    void* arreglo[] = {NULL};
+
+    heap_t* heap = heap_crear_arr(arreglo, 0, cmp_func);
+    print_test("Creando heap vacio distinto de NULL", heap != NULL);
+
+    print_test("Heap esta vacio", heap_esta_vacio(heap) == true);
+    print_test("La cantidad de elementos en el heap es 0", heap_cantidad(heap) == 0);
+    print_test("Ver el maximo del heap es NULL", heap_ver_max(heap) == NULL);
+    print_test("Desencolar en un heap vacio es NULL", heap_desencolar(heap) == NULL);
+
+    /* Destruyo el heap */
+    heap_destruir(heap, NULL);
+    print_test("El heap se destruyo correctamente", true);
+    
+}
+
+void pruebas_volumen_crear_arr(size_t volumen){
+	printf("\n-----Inicio de pruebas de volumen (%zu) elementos con Constructor ---- \n", volumen);
+    
+    void* arreglo[volumen];
+    for (unsigned i = 0; i < volumen; i++){
+        arreglo[i] = &i;
+    }
+    heap_t* heap = heap_crear_arr(arreglo, volumen, cmp_func);
+    print_test("Creando heap vacio distinto de NULL", heap != NULL);
+    print_test("La cantidad de elementos en el heap es correcta", heap_cantidad(heap) == volumen);
+
+    bool desencola_correctamente = true;
+    bool maximos_correctos = true;
+    for (unsigned i = 0; i < volumen; i++){
+        int* maximo = heap_ver_max(heap);
+        int* desencolado = heap_desencolar(heap);
+        if(!desencolado){
+            desencola_correctamente = false;
+            break;
+        }
+        if(*maximo != *desencolado){
+            maximos_correctos = false;
+            break;
+        }
+    }
+    print_test("El heap desencola correctamente", desencola_correctamente);
+    print_test("El heap tiene los maximos correctos", maximos_correctos);
+
+    /* Destruyo el heap */
+	heap_destruir(heap, NULL);
+
+	print_test("el heap se destruyo correctamente", true);
+    
+}
+
+
+void pruebas_heap_alumno(void){
+    prueba_heap_vacio();
+    pruebas_heap_sort();
+    pruebas_heap_destruir_no_NULL();
+    pruebas_varias_heap();
+    heap_pruebas_volumen(3000);
+    pruebas_crear_arr_vacio();
+    pruebas_volumen_crear_arr(3000);
+    heap_pruebas_volumen(6000);
+    pruebas_volumen_crear_arr(6000);
+    heap_pruebas_volumen(12000);
+    pruebas_volumen_crear_arr(12000);
+    heap_pruebas_volumen(20000);
+    pruebas_volumen_crear_arr(20000);
+}

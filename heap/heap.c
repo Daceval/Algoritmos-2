@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include "heap.h"
+#include <string.h>
 
 #define TAM_INICIAL 13
 #define CONST_REDIMENSION 2
@@ -37,8 +38,6 @@ static void upheap(void** arreglo, size_t indice_hijo, cmp_func_t cmp);
 static void downheap(void** arreglo, size_t tam, size_t padre, cmp_func_t cmp);
 
 static void heapify(void** arreglo, size_t tam, cmp_func_t cmp);
-
-
 
 
 /*********	PRIMITIVAS HEAP *************/
@@ -133,17 +132,6 @@ bool heap_esta_vacio(const heap_t* heap){
 
 size_t heap_cantidad(const heap_t* heap){
 	return heap->cant;
-}
-
-void heap_destruir(heap_t* heap, void (*destruir_elemento)(void *e)){
-	void* aux = NULL;
-	while(!heap_esta_vacio(heap)){
-		aux = heap_desencolar(heap);
-		if(destruir_elemento != NULL)
-			destruir_elemento(aux);
-	}
-	free(heap->datos);
-	free(heap);
 }
 
 
@@ -246,14 +234,6 @@ static void heapify(void** arreglo, size_t tam, cmp_func_t cmp){
 	for (size_t i = tam; i > 0; i--)
 	{
 		downheap(arreglo, tam, i-1, cmp);
-	}
-}
-
-void heap_sort(void *elementos[], size_t cant, cmp_func_t cmp){
-	heapify(elementos, cant, cmp);
-	for(size_t i = 0; i < cant; i++){
-		swap(elementos, PRIMERA_POS, cant-i-1);
-		downheap(elementos, cant-i-1, PRIMERA_POS, cmp);
 	}
 }
 

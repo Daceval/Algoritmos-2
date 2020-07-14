@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include "heap.h"
-#include <string.h>
 
 #define TAM_INICIAL 13
 #define CONST_REDIMENSION 2
@@ -132,6 +131,17 @@ size_t heap_cantidad(const heap_t* heap){
 	return heap->cant;
 }
 
+void heap_destruir(heap_t* heap, void (*destruir_elemento)(void *e)){
+	void* aux = NULL;
+	while(!heap_esta_vacio(heap)){
+		aux = heap_desencolar(heap);
+		if(destruir_elemento != NULL)
+			destruir_elemento(aux);
+	}
+	free(heap->datos);
+	free(heap);
+}
+
 
 
 /******* DEFINICIONES DE FUNCIONES AUXILIARES **********/
@@ -226,5 +236,13 @@ static void heapify(void** arreglo, size_t tam, cmp_func_t cmp){
 static void copiar_arreglo(void* arreglo1[], void* arreglo2[], size_t tamanio){
 	for (size_t i = 0; i < tamanio; i++){
 		arreglo1[i] = arreglo2[i];
+	}
+}
+
+void heap_sort(void *elementos[], size_t cant, cmp_func_t cmp){
+	heapify(elementos, cant, cmp);
+	for(size_t i = 0; i < cant; i++){
+		swap(elementos, PRIMERA_POS, cant-i-1);
+		downheap(elementos, cant-i-1, PRIMERA_POS, cmp);
 	}
 }

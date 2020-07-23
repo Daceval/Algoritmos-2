@@ -64,8 +64,8 @@ heap_t* heap_crear_arr(void* arreglo[], size_t n, cmp_func_t cmp){
 	if(!heap){
 		return NULL;
 	}
-	size_t tamanio = n < TAM_INICIAL ? TAM_INICIAL : n;
-	void** arr_aux = malloc(tamanio * sizeof(void*));
+	
+	void** arr_aux = malloc(n * sizeof(void*));
 	if(!arr_aux){
 		free(heap);
 		return NULL;
@@ -78,7 +78,7 @@ heap_t* heap_crear_arr(void* arreglo[], size_t n, cmp_func_t cmp){
 	
 	heap->datos = arr_aux;
 	heap->cant = n;
-	heap->tam = tamanio;
+	heap->tam = n;
 	heap->comparar = cmp;
 	
 	return heap;
@@ -187,7 +187,7 @@ static void swap(void** arreglo, size_t padre, size_t hijo){
 
 
 static size_t obtener_indice_maximo(void** arreglo, size_t padre, size_t hijo_der, size_t hijo_izq, cmp_func_t cmp, size_t tam){
-	size_t max;
+	size_t max = 0;
 
 	if(hijo_der >= tam){
 		max = hijo_izq;

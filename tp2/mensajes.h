@@ -5,7 +5,7 @@
 #define CANT_PACIENTES_ENCOLADOS "%zu paciente(s) en espera para %s\n"
 #define ENOENT_PACIENTE "ERROR: no existe el paciente '%s'\n"
 #define ENOENT_ESPECIALIDAD "ERROR: no existe la especialidad '%s'\n"
-#define ENOENT_URGENCIA "Error: grado de urgencia no identificado ('%s')\n"
+#define ENOENT_URGENCIA "ERROR: grado de urgencia no identificado ('%s')\n"
 
 #define PACIENTE_ATENDIDO "Se atiende a %s\n"
 #define SIN_PACIENTES "No hay pacientes en espera\n"

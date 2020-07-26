@@ -102,6 +102,7 @@ void procesar_entrada(hash_t* sala_de_espera, abb_t* doctores, abb_t* pacientes)
 	free(linea);
 }
 
+
 void inicializar_base_datos_pacientes(abb_t* abb, lista_t* lista){
 	
 	lista_iter_t* iter = lista_iter_crear(lista);
@@ -153,20 +154,10 @@ int main(int argc, char* argv[]) {
 	lista_t* lista2 = csv_crear_estructura(argv[2], parseo_datos, NULL);
 	
 	abb_t* base_datos_doctores = abb_crear(strcmp, NULL);
-	if(!base_datos_doctores) return;
 
 	abb_t* base_datos_pacientes = abb_crear(strcmp, NULL);
-	if(!base_datos_pacientes){
-		abb_destruir(base_datos_doctores);
-		return;
-	}
+
 	hash_t* sala_de_espera = hash_crear(NULL);
-	
-	if (!sala_de_espera){
-		abb_destruir(base_datos_doctores);
-		abb_destruir(base_datos_pacientes);
-		return; //algun error
-	}
 
 	/* cargo los datos del csv al los abb */
 	inicializar_base_datos_pacientes(base_datos_doctores, lista1);
@@ -177,6 +168,10 @@ int main(int argc, char* argv[]) {
 	lista_destruir(lista2);
 
 	procesar_entrada(sala_de_espera, base_datos_doctores, base_datos_pacientes); //procesamos la linea de entrada del usuario por consola.
+
+	abb_destruir(base_datos_doctores);
+	abb_destruir(base_datos_pacientes);
+	hash_destruir(sala_de_espera)
 
 	return 0;
 }

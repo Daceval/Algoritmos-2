@@ -10,21 +10,14 @@
 
 
 
-typedef struct pacientes
-{
+typedef struct cola_pacientes {
 	heap_t* regulares;
 	cola_t* urgentes;
-	size_t pacientes_atendidos; //fijarse...
 
-}pacientes_t;
-
+}cola_pacientes_t;
 
 
-size_t cant_pacientes_atendidos(pacientes_t* pacientes){
-	return pacientes_atendidos;
-}
-
-pacientes_t* pacientes_crear(cmp_func_t cmp){ //pasar_una_funcion_comparacion
+cola_pacientes_t* cola_pacientes_crear(cmp_func_t cmp){ //pasar_una_funcion_comparacion
 	pacientes_t* pacientes = malloc(sizeof(pacientes_t));
 	if (!pacientes) return NULL;
 	pacientes->regulares = heap_crear(cmp);
@@ -39,13 +32,13 @@ pacientes_t* pacientes_crear(cmp_func_t cmp){ //pasar_una_funcion_comparacion
 		free(pacientes->regulares);
 		return NULL;
 	}
-	pacientes->pacientes_atendidos = 0;
 	return pacientes;
 }
 
 
-bool atender_pacientes(pacientes_t* pacientes, char* urgencia){
-	//verificar urgencia si es la correcta...
+
+void* desencolar_paciente(pacientes_t* pacientes, char* urgencia){
+
 	if(!pacientes){
 		return false;
 	}
@@ -62,15 +55,15 @@ bool atender_pacientes(pacientes_t* pacientes, char* urgencia){
 }
 
 
-size_t cant_pacientes_regular(pacientes_t* pacientes){
+size_t cant_pacientes_regular(cola_pacientes_t* pacientes){
 	heap_cantidad(pacientes->regulares);
 }
 
-size_t cant_pacientes_urgentes(pacientes_t* pacientes){
+size_t cant_pacientes_urgentes(cola_pacientes_t* pacientes){
 	cola_cantidad(pacientes->urgentes);
 }
 
-bool pedir_turno(pacientes_t* pacientes, char* urgencia, void* datos){
+bool encolar_turno(cola_pacientes_t* pacientes, char* urgencia, void* datos){
 	if(!datos) return false;
 	
 	if (!strcmp(urgencia, URGENTE)){
@@ -82,9 +75,10 @@ bool pedir_turno(pacientes_t* pacientes, char* urgencia, void* datos){
 	return true;
 }
 
-void pacientes_destruir(pacientes_t* pacientes){
+void pacientes_destruir(cola_pacientes_t* pacientes){
 	
 	heap_destruir(pacientes->regulares);
 	cola_destruir(pacientes->urgentes);
 	free(pacientes);
-}
+} 
+

@@ -22,6 +22,7 @@
 
 #define CANT_PARAMS_PEDIR_TURNO 2
 #define CANT_PARAMS_ATENDER 1
+#define CANT_PARAMS_INFORME 2
 
 clinica_t* init(char** argv);
 
@@ -52,6 +53,10 @@ typedef struct doctor{
 
 
 int main(int argc, char** argv){
+	if(argc != 2){
+		printf(ENOENT_CANT_PARAMS);
+		return 1;
+	}
 	clinica_t clinica = init(argv);
 	while(1){
 		procesar_entrada();
@@ -76,21 +81,11 @@ clinica_t* init(char** argv){
 		abb_iter_in_avanzar(iter);
 	}
 	abb_iter_in_destruir(iter);
-	cola_t* cola = cola_crear();
-	//Agregar funcion de comparacion
-	heap_t* heap = heap_crear();
-	if(!cola || !heap){
-		abb_destruir(arbol_pacientes);
-		abb_destruir(arbol_doctores);
-		hash_destruir(hash);
-		return NULL;
-	}
+	//Agregar funcion de comparacion}
 	clinica_t clinica = malloc(sizeof(clinica_t));
 	if(!clinica){
 		abb_destruir(arbol_pacientes);
 		abb_destruir(arbol_doctores);
-		cola_destruir(cola);
-		heap_destruir(heap);
 		hash_destruir(hash);
 		return NULL;
 	}
@@ -101,6 +96,11 @@ clinica_t* init(char** argv){
 }
 
 void* paciente_wrapper(char** params) {
+	size_t anio = atoi(params[1]);
+	if(anio == 0){
+		printf(ENOENT_ANIO, params[1]);
+		return NULL;
+	}
 	return paciente_crear(params[0], atoi(params[1]));
 }
 
@@ -161,16 +161,17 @@ void cmd_load(const char* comando, const char** parametros, clinica_t* clinica) 
 			pedir_turno(parametros, clinica);
 	} else if (strcmp(comando, COMANDO_ATENDER) == 0) {
 		if(cant_params_check(COMANDO_ATENDER, CANT_PARAMS_ATENDER, parametros))
-			atender_siguiente();
+			atender_siguiente(parametros, clinica);
 	} else if (strcmp(comando, COMANDO_INFORME) == 0) {
-		
+		if(cant_params_check(COMANDO_INFORME, CANT_PARAMS_INFORME, parametros))
+			informe(parametros, clinica);
 	} else {
 		printf(ENOENT_CMD, comando);
 	}
 }
 
 void pedir_turno(const char** parametros, clinica_t* clinica){
-	cola_pacientes_t* turno_especialidad = hash_obtener(clinica->abb_pacs, parametros[1]);
+	cola_pacientes_t* turno_especialidad = hash_obtener(clinica->tabla_esps, parametros[1]);
 	paciente_t* turno_paciente = abb_obtener(clinica->abb_pacs, parametros[0]);
 	bool ok = true;
 	if(!turno_paciente){
@@ -187,15 +188,38 @@ void pedir_turno(const char** parametros, clinica_t* clinica){
 	} else if (strcmp(parametros[2], "REGULAR") == 0 && ok){
 		if(!heap_encolar(turno_especialidad->regulares, turno_paciente))
 			ok = false;
-	} else if (strcmp(parametros[2], "REGULAR") != 0 || strcmp(parametros[2], "URGENTE") != 0){
+	} else if (strcmp(parametros[2], "REGULAR") != 0 && strcmp(parametros[2], "URGENTE") != 0){
 		printf(ENOENT_URGENCIA, parametros[2]);
 		ok = false;
 	}
 	if(ok){
 		printf(PACIENTE_ENCOLADO, parametros[0]);
 		printf(CANT_PACIENTES_ENCOLADOS, turno_especialidad->cant_espera, parametros[1]);
-		//SUMAR UNO A LA CANTIDAD;
+		turno_especialidad->cantidad_en_espera;
 	}
+}
+
+void atender_siguiente(const char** parametros, clinica_t* clinica){
+	doctor_t* doctor = abb_obtener(clinica->abb_docs, parametros[0]);
+	bool ok = true;
+	if(!doctor){
+		ok = false;
+		printf(ENOENT_DOCTOR, parametros[0]);
+		return;
+	}
+	doctor->pac_atendidos++;
+	cola_pacientes_t* cola_esp = hash_obtener(clinica->tabla_esps, doctor->esp);
+	if(cola_esp->cantidad_en_espera == 0){
+		printf(SIN_PACIENTES);
+		doctor->estado = LIBRE;
+		return;
+	}
+	paciente_t* paciente = cola_desencolar(cola_esp->urgentes);
+	if(!paciente)
+		paciente = heap_desencolar(cola_esp->regulares);
+	printf(PACIENTE_ATENDIDO, paciente->nombre);
+	cola_esp->cantidad_en_espera--;
+	printf(CANT_PACIENTES_ENCOLADOS, cola_esp->cantidad_en_espera);
 }
 
 void eliminar_fin_linea(char* linea) {
@@ -210,10 +234,6 @@ void procesar_entrada() {
 	size_t c = 0;
 	while (getline(&linea, &c, stdin) > 0) {
 		eliminar_fin_linea(linea);
-		if(strcmp(linea, "exit") == 0){
-			printf("FIN\n");
-			return;
-		}
 		char** campos = split(linea, ':');
 		if (campos[1] == NULL) {
 			printf(ENOENT_FORMATO, linea);
@@ -230,21 +250,27 @@ void procesar_entrada() {
 
 abb_t* csv_crear_abb(const char* ruta_csv, void* (*creador) (char**), void (*destruir_dato) (void*)) {
 	FILE* archivo = fopen(ruta_csv, "r");
-	if (!archivo) {
+	if (!archivo){
+		printf(ENOENT_ARCHIVO, ruta_csv);
 		return NULL;
 	}
-	
 	abb_t* abb = abb_crear(strcmp, destruir_dato);
 	if (!abb) {
 		fclose(archivo);
 		return NULL;
 	}
-z
 	char* linea = NULL;
 	size_t c = 0;
 	while (getline(&linea, &c, archivo) > 0) {
 		eliminar_fin_linea(linea);
 		char** campos = split(linea, SEPARADOR);
+		void* data = creador(campos);
+		if(!data){
+			fclose(archivo);
+			free(linea);
+			free_strv(campos);
+			return NULL;
+		}
 		abb_guardar(abb, campos[0],  creador(campos));
 		free_strv(campos);
 	}

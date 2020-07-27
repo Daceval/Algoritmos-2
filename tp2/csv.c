@@ -18,7 +18,7 @@ abb_t* csv_crear_estructura(const char* ruta_csv, void* (*creador) (char**, void
 		return NULL;
 	}
 	
-	abb_t* abb = abb_crear(strcmp, NULL);
+	abb_t* abb = abb_crear(strcmp, free);
 	if (!abb) {
 		fclose(archivo);
 		return NULL;

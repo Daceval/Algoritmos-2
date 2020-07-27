@@ -317,3 +317,38 @@ void iterar_in_order(nodo_abb_t* nodo, bool visitar(const char*, void*, void*), 
 	}
 	iterar_in_order(nodo->der, visitar, extra, avanzar);
 }
+
+
+/*
+
+ITERADOR INTERNO IMPLEMENTADO PARA EL TP2 
+DONDE ITERA POR EL RANGO DADO POR LOS PARAMETROS (MIN, MAX)
+LA FUNCION VISITAR ES APLICADA A CADA UNO DE LOS DATOS EN DICHO RANGO.
+
+*/
+void in_order(nodo_abb_t* nodo, bool visitar (const char*, void*, void*), void* extra, abb_comparar_clave_t cmp, void* min, void* max){
+	
+	if(!nodo){
+		return;
+	}
+	if (cmp(nodo->clave, min) > 0){
+		in_order(nodo->izq, visitar, extra, cmp, min, max);
+	}
+	if (cmp(nodo->clave, min) >= 0 && cmp(nodo->clave, max) <= 0){
+		visitar(nodo->clave, nodo->dato, extra);
+	}
+	
+	if(cmp(nodo->clave, max) < 0){
+		in_order(nodo->der,visitar, extra, cmp, min, max);
+	}
+
+}
+
+void abb_in_order_por_rangos(abb_t* abb, bool visitar (const char*, void*, void*), void* extra ,void* min, void* max){
+	if (!abb){
+		return;
+	}
+	if (!visitar) return;
+	in_order(abb->raiz, visitar, extra, abb->comparar, min, max);
+
+}

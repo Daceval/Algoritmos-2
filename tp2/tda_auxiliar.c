@@ -17,7 +17,8 @@ typedef struct cola_pacientes {
 }cola_pacientes_t;
 
 
-cola_pacientes_t* cola_pacientes_crear(cmp_func_t cmp){ //pasar_una_funcion_comparacion
+
+cola_pacientes_t* cola_pacientes_crear(cmp_func_t cmp){  //pasar_una_funcion_comparacion
 	pacientes_t* pacientes = malloc(sizeof(pacientes_t));
 	if (!pacientes) return NULL;
 	pacientes->regulares = heap_crear(cmp);
@@ -59,9 +60,12 @@ size_t cant_pacientes_regular(cola_pacientes_t* pacientes){
 	heap_cantidad(pacientes->regulares);
 }
 
+
 size_t cant_pacientes_urgentes(cola_pacientes_t* pacientes){
 	cola_cantidad(pacientes->urgentes);
 }
+
+
 
 bool encolar_turno(cola_pacientes_t* pacientes, char* urgencia, void* datos){
 	if(!datos) return false;

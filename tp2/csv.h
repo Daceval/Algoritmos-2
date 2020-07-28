@@ -17,7 +17,7 @@ necesario); luego de invocarse el creador se invoca a free_strv.
 Se devuelve un abb con todos los elementos construidos. NULL en caso que el archivo
 csv (indicado por la ruta pasada por parámetro) no exista. 
 **/
-abb_t* csv_crear_estructura(const char* ruta_csv, void* (*creador) (char**), void (*destruir_dato) (void*));
+abb_t* csv_crear_abb(const char* ruta_csv, void* (*creador) (char**), void (*destruir_dato) (void*));
 
 
 #endif

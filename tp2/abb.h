@@ -116,7 +116,7 @@ void abb_iter_in_destruir(abb_iter_t* iter);
 
 /******primitiva iterador intero por rangos ****/
 
-void abb_in_order_por_rangos(abb_t* abb, bool visitar (const char*, void*, void*), void* extra ,void* min, void* max);
+void abb_in_order_por_rangos(abb_t* abb, bool (*visitar) (const char*, void*, void*), void* extra, const char* min, const char* max);
 
 
 

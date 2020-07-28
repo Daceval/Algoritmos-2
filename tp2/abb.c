@@ -1,5 +1,4 @@
 #define _POSIX_C_SOURCE 200809L
-#include "testing.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -173,7 +172,7 @@ size_t abb_cantidad(abb_t* arbol){
 
 char* devolver_menor_clave(const abb_t* arbol){
 	if (!arbol) return NULL;
-	nodo_abb_t* nodo_menor = buscar_menor_nodo(arbol->raiz)
+	nodo_abb_t* nodo_menor = buscar_menor_nodo(arbol->raiz);
 	char* clave_a_devolver = nodo_menor->clave;
 
 	return clave_a_devolver;
@@ -181,7 +180,7 @@ char* devolver_menor_clave(const abb_t* arbol){
 
 char* devolver_mayor_clave(const abb_t* arbol){
 	if (!arbol) return NULL;
-	nodo_abb_t* nodo_mayor = buscar_mayor_nodo(arbol->raiz)
+	nodo_abb_t* nodo_mayor = buscar_mayor_nodo(arbol->raiz);
 	char* clave_a_devolver = nodo_mayor->clave;
 
 	return clave_a_devolver;
@@ -371,7 +370,7 @@ LA FUNCION VISITAR ES APLICADA A CADA UNO DE LOS DATOS EN DICHO RANGO.
 */
 
 
-void in_order(nodo_abb_t* nodo, bool visitar (const char*, void*, void*), void* extra, abb_comparar_clave_t cmp, void* min, void* max){
+void in_order(nodo_abb_t* nodo, bool (*visitar) (const char*, void*, void*), void* extra, abb_comparar_clave_t cmp, const char* min, const char* max){
 	
 	if(!nodo){
 		return;
@@ -389,7 +388,7 @@ void in_order(nodo_abb_t* nodo, bool visitar (const char*, void*, void*), void* 
 
 }
 
-void abb_in_order_por_rangos(abb_t* abb, bool visitar (const char*, void*, void*), void* extra ,void* min, void* max){
+void abb_in_order_por_rangos(abb_t* abb, bool (*visitar) (const char*, void*, void*), void* extra, const char* min, const char* max){
 	if (!abb){
 		return;
 	}

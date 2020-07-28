@@ -1,9 +1,14 @@
+#define _POSIX_C_SOURCE 200809L
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include "funciones_tp2.c"
-//#include "strutil.h"
+
 #include "mensajes.h"
+#include "hash.h"
+#include "abb.h"
+// #include "funciones_tp2.c"
+//#include "strutil.h"
+
 
 // #include "hash.h"
 // #include "abb.h"
@@ -15,6 +20,17 @@
 
 // #define PACIENTE_REGULAR "REGULAR"
 // #define PACIENTE_URGENTE "URGENTE"
+
+typedef struct clinica{
+	abb_t* abb_docs;
+	abb_t* abb_pacs;
+	hash_t* tabla_esps;
+}clinica_t;
+
+clinica_t* init(char** argv);
+
+void procesar_entrada(clinica_t* clinica);
+
 
 
 

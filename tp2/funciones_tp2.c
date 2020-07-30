@@ -4,7 +4,6 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-
 #include "mensajes.h"
 #include "csv.h"
 #include "heap.h"
@@ -12,14 +11,12 @@
 #include "abb.h"
 #include "hash.h"
 #include "cola.h"
-//#include "funciones_tp2.h"
+#include "funciones_tp2.h"
 #include "strutil.h"
-
-
 
 #define PACIENTES 1
 #define DOCTORES 0
-#define ENTRADA_VACIA " "
+#define ENTRADA_VACIA ""
 
 #define COMANDO_PEDIR_TURNO "PEDIR_TURNO"
 #define COMANDO_ATENDER "ATENDER_SIGUIENTE"
@@ -28,73 +25,10 @@
 #define PACIENTE_REGULAR "REGULAR"
 #define PACIENTE_URGENTE "URGENTE"
 
-#define CANT_PARAMS_PEDIR_TURNO 2
+#define CANT_PARAMS_PEDIR_TURNO 3
 #define CANT_PARAMS_ATENDER 1
 #define CANT_PARAMS_INFORME 2
 
-
-typedef enum {TODOS_LOS_ELEM, SIN_MINIMO, SIN_MAXIMO, CON_MIN_Y_MAX} extremos_t;
-
-typedef enum {LIBRE, OCUPADO} estado_t;
-
-/************* DECLARACION DE ESTRUCTURAS *****************/
-
-
-typedef struct clinica clinica_t;
-
-typedef struct paciente paciente_t;
-
-typedef struct doctor doctor_t;
-
-typedef struct cola_pacientes cola_pacientes_t;
-
-/********* DECLARACIONES DE FUNCIONES PARA TP2 ****************/
-
-clinica_t* init(char** argv);
-
-cola_pacientes_t* cola_pacientes_crear(cmp_func_t cmp);
-
-doctor_t* doctor_crear(const char* nombre, char* esp);
-
-paciente_t* paciente_crear(const char* nombre, size_t anio_i);
-
-bool cant_params_check(char* cmd, size_t cant_params, const char** parametros);
-
-void cmd_load(const char* comando, const char** parametros, clinica_t* clinica);
-
-void eliminar_fin_linea(char* linea);
-
-void procesar_entrada(clinica_t* clinica);
-
-void pedir_turno(const char** parametros, clinica_t* clinica);
-
-void informe(const char** parametros, clinica_t* clinica);
-
-void atender_siguiente(const char** parametros, clinica_t* clinica);
-
-void* paciente_wrapper(char** params);
-
-void* doctor_wrapper(char** params);
-
-void doctor_destruir(doctor_t* d);
-
-void paciente_destruir(paciente_t* p);
-
-void doctor_destruir_wrapper(void*);
-
-void paciente_destruir_wrapper(void*);
-
-void cola_pacientes_destruir(cola_pacientes_t* pacientes);
-
-int func(const char* min, const char* max);
-
-void iteracion_por_rangos(abb_t* abb, bool (*visitar) (const char*, void*, void*), void* extra, int cant_extremos, const char* min, const char* max);
-
-bool funtion(const char* clave, void* valor, void* extra);
-
-int comparar_pacientes(const void* a, const void* b);
-
-/************ DEFINICION DE ESTRUCTURAS *******************/
 
 struct clinica{
 	abb_t* abb_docs;
@@ -124,6 +58,7 @@ struct cola_pacientes {
 	
 };
 
+
 int comparar_pacientes(const void* a, const void* b){
 	paciente_t* dato1 = (paciente_t*)a;
 	paciente_t* dato2 = (paciente_t*)b;
@@ -140,18 +75,18 @@ int comparar_pacientes(const void* a, const void* b){
 /****** DEFINICIONES DE FUNCIONES PARA TP2  ***********/
 
 
-
 /* funcion visitar para iterador interno de abb */
-bool funtion(const char* clave, void* valor, void* extra){
-	size_t n = *(size_t*)extra;
+
+bool func_visitar_informe(const char* clave, void* valor, void* extra){
+	size_t* n = (size_t*)extra;
 	doctor_t* info_doctor = (doctor_t*)valor;
-	printf(INFORME_DOCTOR, n, clave, info_doctor->esp, info_doctor->pac_atendidos); //fijarse si esta bien ingresar a la estructura del doctor...
-	n++;
+	printf(INFORME_DOCTOR, *n, clave, info_doctor->esp, info_doctor->pac_atendidos); //fijarse si esta bien ingresar a la estructura del doctor...	
+	*n+=1;
 	return true;
 }
 
 /* funcion que devuelve un valor entero dependiendo del min y max ingresado */
-int func(const char* min, const char* max){
+int obtener_num_extremos(const char* min, const char* max){
 	int cant_extremos = 0;
 	if (!strcmp(min, ENTRADA_VACIA) && !strcmp(max, ENTRADA_VACIA)){
 		cant_extremos = TODOS_LOS_ELEM;
@@ -185,9 +120,13 @@ void iteracion_por_rangos(abb_t* abb, bool visitar (const char*, void*, void*), 
 			abb_in_order_por_rangos(abb, visitar, extra, min, fin);
 			break;
 		}
-		default: 
+		case CON_MIN_Y_MAX:{
 			abb_in_order_por_rangos(abb, visitar, extra, min, max);
 			break;
+		}
+		default: 
+			break;
+	
 	}
 }
 
@@ -241,7 +180,7 @@ doctor_t* doctor_crear(const char* nombre, char* esp) {
 		free(d);
 		return NULL;
 	}
-	d->esp = esp;
+	d->esp = strdup(esp);
 	d->pac_atendidos = 0;
 	d->estado = LIBRE;
 	return d;
@@ -279,9 +218,7 @@ cola_pacientes_t* cola_pacientes_crear(cmp_func_t cmp){
 }
 
 
-clinica_t* init(char** argv){
-	abb_t* arbol_pacientes = csv_crear_abb(argv[1], doctor_wrapper, doctor_destruir_wrapper);
-	abb_t* arbol_doctores = csv_crear_abb(argv[2], paciente_wrapper, paciente_destruir_wrapper);
+clinica_t* init(abb_t* arbol_doctores, abb_t* arbol_pacientes){
 	hash_t* hash = hash_crear(NULL);
 	abb_iter_t* iter = abb_iter_in_crear(arbol_doctores);
 	if(!hash || !iter){
@@ -291,7 +228,14 @@ clinica_t* init(char** argv){
 	}
 	while(!abb_iter_in_al_final(iter)){
 		cola_pacientes_t* q_pacientes = cola_pacientes_crear(comparar_pacientes);
-		doctor_t* doc = abb_obtener(arbol_doctores,abb_iter_in_ver_actual(iter));//corregido
+		if (!q_pacientes){
+			abb_destruir(arbol_pacientes);
+			abb_destruir(arbol_doctores);
+			hash_destruir(hash);
+			abb_iter_in_destruir(iter);
+			return NULL;
+		} 
+		doctor_t* doc = (doctor_t*)abb_obtener(arbol_doctores, abb_iter_in_ver_actual(iter));//corregido
 		hash_guardar(hash, doc->esp, q_pacientes);
 		abb_iter_in_avanzar(iter);
 	}
@@ -337,8 +281,10 @@ void cmd_load(const char* comando, const char** parametros, clinica_t* clinica) 
 
 
 void informe(const char** parametros, clinica_t* clinica){
-	int valor_entero_rango = func(parametros[0], parametros[1]);
-	iteracion_por_rangos(clinica->abb_docs, funtion, NULL, valor_entero_rango, parametros[0], parametros[1]);
+	size_t inicio = 1;
+	printf(DOCTORES_SISTEMA, abb_cantidad(clinica->abb_docs));
+	int valor_entero_rango = obtener_num_extremos(parametros[0], parametros[1]);
+	iteracion_por_rangos(clinica->abb_docs, func_visitar_informe, &inicio, valor_entero_rango, parametros[0], parametros[1]);
 }
 
 void pedir_turno(const char** parametros, clinica_t* clinica){
@@ -349,7 +295,7 @@ void pedir_turno(const char** parametros, clinica_t* clinica){
 		printf(ENOENT_PACIENTE, parametros[0]);
 		ok = false;
 	}
-	if(!turno_especialidad){
+	if(!hash_obtener(clinica->tabla_esps, parametros[1])){
 		printf(ENOENT_ESPECIALIDAD, parametros[1]);
 		ok = false;
 	}
@@ -365,8 +311,9 @@ void pedir_turno(const char** parametros, clinica_t* clinica){
 	}
 	if(ok){
 		printf(PACIENTE_ENCOLADO, parametros[0]);
-		printf(CANT_PACIENTES_ENCOLADOS, turno_especialidad->cantidad_en_espera, parametros[1]);
 		turno_especialidad->cantidad_en_espera++;
+		printf(CANT_PACIENTES_ENCOLADOS, turno_especialidad->cantidad_en_espera, parametros[1]);
+		//turno_especialidad->cantidad_en_espera++;
 	}
 }
 
@@ -377,13 +324,14 @@ void atender_siguiente(const char** parametros, clinica_t* clinica){
 		printf(ENOENT_DOCTOR, parametros[0]);
 		return;
 	}
-	doctor->pac_atendidos++;
+
 	cola_pacientes_t* cola_esp = hash_obtener(clinica->tabla_esps, doctor->esp);
 	if(cola_esp->cantidad_en_espera == 0){
 		printf(SIN_PACIENTES);
 		doctor->estado = LIBRE;
 		return;
 	}
+	doctor->pac_atendidos++;
 	paciente_t* paciente = cola_desencolar(cola_esp->urgentes);
 	if(!paciente)
 		paciente = heap_desencolar(cola_esp->regulares);

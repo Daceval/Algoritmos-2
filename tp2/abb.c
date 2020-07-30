@@ -362,11 +362,9 @@ nodo_abb_t* buscar_mayor_nodo(nodo_abb_t* nodo){
 }
 
 /*
-
 ITERADOR INTERNO IMPLEMENTADO PARA EL TP2 
 DONDE ITERA POR EL RANGO DADO POR LOS PARAMETROS (MIN, MAX)
 LA FUNCION VISITAR ES APLICADA A CADA UNO DE LOS DATOS EN DICHO RANGO.
-
 */
 
 
@@ -385,7 +383,6 @@ void in_order(nodo_abb_t* nodo, bool (*visitar) (const char*, void*, void*), voi
 	if(cmp(nodo->clave, max) < 0){
 		in_order(nodo->der,visitar, extra, cmp, min, max);
 	}
-
 }
 
 void abb_in_order_por_rangos(abb_t* abb, bool (*visitar) (const char*, void*, void*), void* extra, const char* min, const char* max){

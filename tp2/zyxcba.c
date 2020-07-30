@@ -2,45 +2,46 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include "csv.h"
 
 #include "mensajes.h"
 #include "hash.h"
 #include "abb.h"
-// #include "funciones_tp2.c"
-//#include "strutil.h"
+#include "funciones_tp2.h"
+#include "strutil.h"
 
 
-// #include "hash.h"
-// #include "abb.h"
-// #include "lista.h"
 
-// #define COMANDO_PEDIR_TURNO "PEDIR_TURNO"
-// #define COMANDO_ATENDER "ATENDER_SIGUIENTE"
-// #define COMANDO_INFORME "INFORME"
-
-// #define PACIENTE_REGULAR "REGULAR"
-// #define PACIENTE_URGENTE "URGENTE"
-
-typedef struct clinica{
-	abb_t* abb_docs;
-	abb_t* abb_pacs;
-	hash_t* tabla_esps;
-}clinica_t;
-
-clinica_t* init(char** argv);
-
-void procesar_entrada(clinica_t* clinica);
-
-
+int verificar_arch(abb_t* abb1, abb_t* abb2, char** argv){
+	bool ok = true;
+	if (!abb1){
+		printf(ENOENT_ARCHIVO, argv[1]);
+		ok = false;
+	}
+	if (!abb2){
+		printf(ENOENT_ARCHIVO, argv[2]);
+		ok = false;
+	}
+	return !ok ? 1 : 0;
+}
 
 
 int main(int argc, char** argv){
-	if(argc != 2){
+	if(argc != 3){
 		printf(ENOENT_CANT_PARAMS);
 		return 1;
 	}
-	clinica_t* clinica = init(argv);
-	while(1){
+	abb_t* arbol_doctores = csv_crear_abb(argv[1], doctor_wrapper, doctor_destruir_wrapper);
+	abb_t* arbol_pacientes = csv_crear_abb(argv[2], paciente_wrapper, paciente_destruir_wrapper);
+
+	int indice_corte = verificar_arch(arbol_doctores, arbol_pacientes, argv);
+	if (indice_corte == 1) {
+		abb_destruir(arbol_doctores);
+		abb_destruir(arbol_pacientes);
+		return indice_corte;
+	}
+	clinica_t* clinica = init(arbol_doctores, arbol_pacientes);
+	while(true){
 		procesar_entrada(clinica);
 	}
 }

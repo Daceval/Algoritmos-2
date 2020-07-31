@@ -41,7 +41,9 @@ int main(int argc, char** argv){
 		return indice_corte;
 	}
 	clinica_t* clinica = init(arbol_doctores, arbol_pacientes);
-	while(true){
-		procesar_entrada(clinica);
+	bool seguir = true;
+	while(seguir){
+		seguir = procesar_entrada(clinica);
 	}
+	clinica_destruir(clinica);
 }

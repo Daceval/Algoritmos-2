@@ -69,7 +69,7 @@ void eliminar_fin_linea(char* linea);
  * Post: parsea la entra, lista para ser procesada
  * por las funciones de comandos.
  */ 
-void procesar_entrada(clinica_t* clinica);
+bool procesar_entrada(clinica_t* clinica);
 
 /* Pide turno para una determinada especialidad ingresada por paramentro
  * y la encola en la lista de espera de esta.
@@ -84,6 +84,10 @@ void pedir_turno(const char** parametros, clinica_t* clinica);
  * Pre: la clinica fue inicializada
  */
 void informe(const char** parametros, clinica_t* clinica);
+
+/*Libera la memoria utilizada
+*/
+void clinica_destruir(clinica_t* clinica);
 
 
 void atender_siguiente(const char** parametros, clinica_t* clinica);
@@ -101,6 +105,8 @@ void doctor_destruir_wrapper(void*);
 void paciente_destruir_wrapper(void*);
 
 void cola_pacientes_destruir(cola_pacientes_t* pacientes);
+
+void cola_pacientes_destruir_wrapper(void* q);
 
 int obtener_num_extremos(const char* min, const char* max);
 

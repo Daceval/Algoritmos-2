@@ -3,3 +3,6 @@ build: zyxcba.c pila.c cola.c lista.c hash.c abb.c heap.c strutil.c csv.c funcio
 
 run: build
 	./pruebas doctores.csv pacientes.csv
+
+pruebas: build
+	./pruebas

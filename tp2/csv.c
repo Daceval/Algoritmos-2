@@ -15,22 +15,27 @@ static void eliminar_fin_linea(char* linea) {
 
 abb_t* csv_crear_abb(const char* ruta_csv, void* (*creador) (char**), void (*destruir_dato) (void*)) {
 	FILE* archivo = fopen(ruta_csv, "r");
-	if (!archivo) {
+	if (!archivo) 
 		return NULL;
-	}
-	
 	abb_t* abb = abb_crear(strcmp, destruir_dato);
 	if (!abb) {
 		fclose(archivo);
 		return NULL;
 	}
-	
 	char* linea = NULL;
 	size_t c = 0;
 	while (getline(&linea, &c, archivo) > 0) {
 		eliminar_fin_linea(linea);
 		char** campos = split(linea, SEPARADOR);
-		abb_guardar(abb, campos[0],  creador(campos));
+		void* indv = creador(campos);
+		if(!indv){
+			free(linea);
+			free_strv(campos);
+			abb_destruir(abb);
+			fclose(archivo);
+			return NULL;
+		}
+		abb_guardar(abb, campos[0],  indv);
 		free_strv(campos);
 	}
 	free(linea);

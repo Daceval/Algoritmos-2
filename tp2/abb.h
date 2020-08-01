@@ -66,9 +66,16 @@ size_t abb_cantidad(abb_t *arbol);
 void abb_destruir(abb_t *arbol);
 
 
+/* Devuelve la mayor de la claves dentro del abb
+ */ 
 char* devolver_mayor_clave(const abb_t* arbol);
 
+
+/* Devuelve la menor de la claves dentro del abb
+ */ 
 char* devolver_menor_clave(const abb_t* arbol);
+
+
 
 /****** primitiva de iterador interno *********/
 

@@ -75,15 +75,6 @@ int comparar_pacientes(const void* a, const void* b){
 /****** DEFINICIONES DE FUNCIONES PARA TP2  ***********/
 
 
-/* funcion visitar para iterador interno de abb */
-
-bool func_visitar_informe(const char* clave, void* valor, void* extra){
-	size_t* n = (size_t*)extra;
-	doctor_t* info_doctor = (doctor_t*)valor;
-	printf(INFORME_DOCTOR, *n, clave, info_doctor->esp, info_doctor->pac_atendidos); //fijarse si esta bien ingresar a la estructura del doctor...	
-	*n+=1;
-	return true;
-}
 
 /* funcion que devuelve un valor entero dependiendo del min y max ingresado */
 int obtener_num_extremos(const char* min, const char* max){
@@ -98,6 +89,7 @@ int obtener_num_extremos(const char* min, const char* max){
 	}
 	return cant_extremos;
 }
+
 
 /* dependiendo de la entrada ingresada, llama al iterador interno de abb con min y max correspondientes */
 void iteracion_por_rangos(abb_t* abb, bool (*visitar) (const char*, void*, void*), void* extra, int cant_extremos, const char* min, const char* max){
@@ -284,16 +276,43 @@ void cmd_load(const char* comando, const char** parametros, clinica_t* clinica) 
 	}
 }
 
+/* funcion visitar para iterador interno de abb */
+
+bool func_visitar_informe(const char* clave, void* valor, void* extra){
+	lista_t* info_doc = (lista_t*)extra;
+	doctor_t* dc = (doctor_t*)valor;
+	lista_insertar_ultimo(info_doc, dc);
+	return true;
+}
+
+
+bool func_visitar_list_doc(void* dato, void* extra){
+	size_t* num = (size_t*)extra;
+	doctor_t* doctor = (doctor_t*)dato;
+	printf(INFORME_DOCTOR, *num, doctor->nombre, doctor->esp, doctor->pac_atendidos);
+	*num+=1;
+	return true;
+}
 
 void informe(const char** parametros, clinica_t* clinica){
 	size_t inicio = 1;
 	size_t cant_doctores = abb_cantidad(clinica->abb_docs);
-	printf(DOCTORES_SISTEMA, cant_doctores);
+	lista_t* lista_docs = lista_crear();
+	
 	if(cant_doctores){
 		int valor_entero_rango = obtener_num_extremos(parametros[0], parametros[1]);
-		iteracion_por_rangos(clinica->abb_docs, func_visitar_informe, &inicio, valor_entero_rango, parametros[0], parametros[1]);
+		iteracion_por_rangos(clinica->abb_docs, func_visitar_informe, lista_docs, valor_entero_rango, parametros[0], parametros[1]);
+		
+		size_t doctores_sist = lista_largo(lista_docs);
+		printf(DOCTORES_SISTEMA, doctores_sist);
+		lista_iterar(lista_docs, func_visitar_list_doc, &inicio);
+	}else{
+		size_t nadie = 0;
+		printf(DOCTORES_SISTEMA, nadie);
 	}
+	lista_destruir(lista_docs, NULL);
 }
+
 
 void pedir_turno(const char** parametros, clinica_t* clinica){
 	cola_pacientes_t* turno_especialidad = hash_obtener(clinica->tabla_esps, parametros[1]);
@@ -321,7 +340,6 @@ void pedir_turno(const char** parametros, clinica_t* clinica){
 		printf(PACIENTE_ENCOLADO, parametros[0]);
 		turno_especialidad->cantidad_en_espera++;
 		printf(CANT_PACIENTES_ENCOLADOS, turno_especialidad->cantidad_en_espera, parametros[1]);
-		turno_especialidad->cantidad_en_espera++;
 	}
 }
 

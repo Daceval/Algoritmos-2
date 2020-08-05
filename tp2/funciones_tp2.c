@@ -76,7 +76,7 @@ int comparar_pacientes(const void* a, const void* b){
 
 
 
-/* funcion que devuelve un valor entero dependiendo del min y max ingresado */
+
 int obtener_num_extremos(const char* min, const char* max){
 	int cant_extremos = 0;
 	if (!strcmp(min, ENTRADA_VACIA) && !strcmp(max, ENTRADA_VACIA)){
@@ -91,7 +91,7 @@ int obtener_num_extremos(const char* min, const char* max){
 }
 
 
-/* dependiendo de la entrada ingresada, llama al iterador interno de abb con min y max correspondientes */
+
 void iteracion_por_rangos(abb_t* abb, bool (*visitar) (const char*, void*, void*), void* extra, int cant_extremos, const char* min, const char* max){
 
 	switch(cant_extremos){
@@ -99,7 +99,7 @@ void iteracion_por_rangos(abb_t* abb, bool (*visitar) (const char*, void*, void*
 		case TODOS_LOS_ELEM:{
 			char* inicio = devolver_menor_clave(abb);
 			char* fin = devolver_mayor_clave(abb);
-			abb_in_order_por_rangos(abb, visitar, extra, inicio, fin); // O(log N) + K
+			abb_in_order_por_rangos(abb, visitar, extra, inicio, fin); 
 			break;
 		}
 		case SIN_MINIMO:{
@@ -157,8 +157,8 @@ void paciente_destruir(paciente_t* p){
 
 void cola_pacientes_destruir(cola_pacientes_t* pacientes){
 	
-	heap_destruir(pacientes->regulares, NULL); //pasar una funcion de destruccion, tiraba error al compilar
-												//por eso puse NULL
+	heap_destruir(pacientes->regulares, NULL); 
+												
 	cola_destruir(pacientes->urgentes, NULL);
 	free(pacientes);
 } 
@@ -195,7 +195,7 @@ paciente_t* paciente_crear(const char* nombre, size_t anio_i) {
 	return p;
 }
 
-cola_pacientes_t* cola_pacientes_crear(cmp_func_t cmp){ 
+cola_pacientes_t* cola_pacientes_crear(funct_t cmp){ 
 	cola_pacientes_t* pacientes = malloc(sizeof(cola_pacientes_t));
 	if (!pacientes) return NULL;
 	pacientes->regulares = heap_crear(cmp);
@@ -232,7 +232,7 @@ clinica_t* init(abb_t* arbol_doctores, abb_t* arbol_pacientes){
 			abb_iter_in_destruir(iter);
 			return NULL;
 		} 
-		doctor_t* doc = (doctor_t*)abb_obtener(arbol_doctores, abb_iter_in_ver_actual(iter));//corregido
+		doctor_t* doc = (doctor_t*)abb_obtener(arbol_doctores, abb_iter_in_ver_actual(iter));
 		hash_guardar(hash, doc->esp, q_pacientes);
 		abb_iter_in_avanzar(iter);
 	}
